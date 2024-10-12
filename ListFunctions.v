@@ -5,8 +5,8 @@ Import ListNotations.
 
 Require Import OptionFunctions.
 
-Require Import FreeMonoid.StructMonoid.
-Require Import FreeMonoid.MonoidFree.
+(* Require Import FreeMonoid.StructMonoid.
+Require Import FreeMonoid.MonoidFree. *)
 
 Require Import Coq.ssr.ssrfun.
 
@@ -69,7 +69,7 @@ Proof.
   reflexivity.
 Qed.
 
-Context {A : Type} (HmagmaA : Magma A) (HsemigroupA : Semigroup A) (HmonoidA : Monoid A).
+(* Context {A : Type} (HmagmaA : Magma A) (HsemigroupA : Semigroup A) (HmonoidA : Monoid A).
 
 Module ABasis.
   Definition Basis := A.
@@ -90,7 +90,7 @@ Proof.
   - reflexivity.
   - rewrite <- IH.
     apply AFreeMonoid.extend_monoid_homomorphism.
-Qed.
+Qed. *)
 
 Lemma fold_left_nil : forall [A B : Type] (f : A -> B -> A) (i : A),
   fold_left f nil i = i.
