@@ -1,5 +1,0 @@
--docroot MyProject
--R CoqUtilLib CoqUtilLib
-CoqUtilLib/ListFunctions.v
-CoqUtilLib/OptionFunctions.v
-CoqUtilLib/FunctionLemmas.v
