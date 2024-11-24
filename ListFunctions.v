@@ -111,7 +111,7 @@ Qed.
 Theorem fold_left_right_equiv : 
   forall (A : Type) (f : A -> A -> A) (z : A) (l : list A),
     (forall x y z, f x (f y z) = f (f x y) z) -> (* Associativity of f *)
-    (forall x y, f x y = f y x) -> (* Associativity of f *)
+    (forall x y, f x y = f y x) -> (* Commutativity of f *)
     fold_left f l z = fold_right f z l.
 Proof.
   intros A f z l H_assoc H_comm.
