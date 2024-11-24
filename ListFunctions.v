@@ -15,7 +15,6 @@ Definition tails {A : Type}: list A -> list (list A) := fold_right (fun x xsxss 
   | xs :: xss => (x::xs) :: (xs::xss)
 end) [[]].
 
-(* Define the inits function using reverse and tails *)
 Definition inits {A : Type}: list A -> list (list A) := fold_right (fun x => (cons []) ∘ map (cons x)) [[]].
 
 Definition concat {A : Type} : list (list A) -> list A := @List.concat A.
@@ -50,6 +49,16 @@ Proof.
     rewrite <- (IH (f i x')). (* Use the induction hypothesis *)
     f_equal.
     apply comH.
+Qed.
+
+Lemma fold_left_app_assoc : forall [A B : Type] (f : A -> A -> A) (x : A) (xs : list A) (i : A),
+  (forall (i : A), associative (fun x y => f (f i x) y)) -> fold_left f (xs ++ [x]) i = f (fold_left f xs i) x.
+Proof.
+  intros A B f x xs i assocH.
+  revert i. (* We prepare to use induction on `xs` *)
+  induction xs as [|x' xs' IH]; intros i.
+  - reflexivity.
+  - exact (IH (f i x')). (* Use the induction hypothesis *)
 Qed.
 
 (* Lemma fold_left_comm_cons_app : forall [A B : Type] (f : A -> A -> A) (x : A) (xs ys : list A) (i : A),
