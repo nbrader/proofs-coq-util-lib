@@ -35,32 +35,6 @@ Fixpoint scan_left {A B : Type} (f : B -> A -> B) (xs : list A) (i : B) {struct 
     | x :: xs' => scan_left f xs' (f i x)
     end.
 
-(* Allows us to expand a left fold as if it were a right fold, provided the operation allows a form of commutativity. *)
-Lemma fold_left_cons_comm : forall [A B : Type] (f : B -> A -> B) (x : A) (xs : list A) (i : B),
-  (forall (i : B), commutative (fun x y => f (f i x) y)) -> fold_left f (x :: xs) i = f (fold_left f xs i) x.
-Proof.
-  intros A B f x xs i comH.
-  simpl. (* This reduces `fold_left f (x :: xs) i` to `fold_left f xs (f i x)` *)
-  revert i. (* We prepare to use induction on `xs` *)
-  induction xs as [|x' xs' IH]; intros i.
-  - simpl. (* Base case: `fold_left f [] (f i x)` simplifies to `f i x` *)
-    reflexivity.
-  - simpl in *. (* Inductive case: unfold the definition for one more element *)
-    rewrite <- (IH (f i x')). (* Use the induction hypothesis *)
-    f_equal.
-    apply comH.
-Qed.
-
-Lemma fold_left_app_assoc : forall [A B : Type] (f : A -> A -> A) (x : A) (xs : list A) (i : A),
-  (forall (i : A), associative (fun x y => f (f i x) y)) -> fold_left f (xs ++ [x]) i = f (fold_left f xs i) x.
-Proof.
-  intros A B f x xs i assocH.
-  revert i. (* We prepare to use induction on `xs` *)
-  induction xs as [|x' xs' IH]; intros i.
-  - reflexivity.
-  - exact (IH (f i x')). (* Use the induction hypothesis *)
-Qed.
-
 (* Lemma fold_left_comm_cons_app : forall [A B : Type] (f : A -> A -> A) (x : A) (xs ys : list A) (i : A),
   commutative f -> fold_left f ((x :: xs) ++ ys) i = fold_left f (xs ++ (x :: ys)) i.
 Proof.
@@ -77,6 +51,92 @@ Proof.
   intros X x xs.
   reflexivity.
 Qed.
+
+(* Allows us to expand a left fold as if it were a right fold, provided the operation allows a form of commutativity. *)
+Lemma fold_left_cons_comm : forall [A B : Type] (f : B -> A -> B) (x : A) (xs : list A) (i : B),
+  (forall (i : B), commutative (fun x y => f (f i x) y)) -> fold_left f (x :: xs) i = f (fold_left f xs i) x.
+Proof.
+  intros A B f x xs i comH.
+  simpl. (* This reduces `fold_left f (x :: xs) i` to `fold_left f xs (f i x)` *)
+  revert i. (* We prepare to use induction on `xs` *)
+  induction xs as [|x' xs' IH]; intros i.
+  - simpl. (* Base case: `fold_left f [] (f i x)` simplifies to `f i x` *)
+    reflexivity.
+  - simpl in *. (* Inductive case: unfold the definition for one more element *)
+    rewrite <- (IH (f i x')). (* Use the induction hypothesis *)
+    f_equal.
+    apply comH.
+Qed.
+
+Lemma fold_left_app_assoc : forall [A : Type] (f : A -> A -> A) (x : A) (xs : list A) (i : A),
+  fold_left f (xs ++ [x]) i = f (fold_left f xs i) x.
+Proof.
+  intros A f x xs.
+  induction xs as [|x' xs' IH]; intros i.
+  - reflexivity.
+  - exact (IH (f i x')).
+Qed.
+
+Definition middle_assoc [A : Type] (P : A -> Prop) (f : A -> A -> A) : Prop := forall (a m b : A), forall (P_m : P m), f (f a m) b = f a (f m b).
+
+Lemma fold_left_combine_middle_assoc : forall [A : Type] (P : A -> Prop) (f : A -> A -> A) (x y : A) (xs ys : list A),
+  forall (middle_assoc_P_f : middle_assoc P f),
+  forall (P_x : P x),
+  forall (P_y : P y),
+  forall (P_xs : Forall P xs),
+  forall (P_ys : Forall P ys),
+
+  f (fold_left f xs x) (fold_left f ys y) = fold_left f (xs ++ y :: ys) x.
+Proof.
+  intros A P f x y xs ys.
+  intros.
+  apply Forall_rev in P_ys.
+  rewrite <- (rev_involutive ys).
+  remember (rev ys).
+  induction (rev l).
+  - rewrite fold_left_app_assoc.
+    reflexivity.
+  - admit.
+  (* - 
+  rewrite Forall_forall in P_ys.
+  destruct P_ys.
+  - rewrite fold_left_app.
+    simpl.
+    reflexivity.
+  - replace (xs ++ y :: x0 :: l) with (xs ++ [y] ++ [x0] ++ l) by reflexivity.
+    rewrite fold_left_app.
+    rewrite fold_left_app.
+    rewrite fold_left_app.
+
+
+
+  - induction P_ys.
+    + reflexivity.
+    + replace (fold_left f ([] ++ y :: x0 :: l) x) with (fold_left f (y :: x0 :: l) x) by reflexivity.
+
+      simpl in *.
+      unfold middle_assoc in middle_assoc_P_f.
+      specialize middle_assoc_P_f with (P_m := P_y) as assoc_y.
+      rewrite assoc_y. clear assoc_y.
+
+  - simpl.
+    unfold middle_assoc in middle_assoc_P_f.
+    specialize middle_assoc_P_f with (P_m := P_x) as assoc_x.
+    specialize middle_assoc_P_f with (P_m := P_y) as assoc_y.
+    rewrite assoc_y.
+  rewrite fold_left_app.
+  rewrite <- fold_left_app_assoc.
+  simpl.
+  rewrite fold_left_app.
+  simpl.
+  rewrite cons_append.
+  simpl. (* This reduces `fold_left f (x :: xs) i` to `fold_left f xs (f i x)` *)
+  revert i. (* We prepare to use induction on `xs` *)
+  induction xs as [|x' xs' IH]; intros i.
+  - reflexivity.
+  - exact (IH (f i x')). *)
+
+Admitted.
 
 (* Context {A : Type} (HmagmaA : Magma A) (HsemigroupA : Semigroup A) (HmonoidA : Monoid A).
 
