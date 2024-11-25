@@ -72,9 +72,7 @@ Lemma fold_left_app_assoc : forall [A : Type] (f : A -> A -> A) (x : A) (xs : li
   fold_left f (xs ++ [x]) i = f (fold_left f xs i) x.
 Proof.
   intros A f x xs.
-  induction xs as [|x' xs' IH]; intros i.
-  - reflexivity.
-  - exact (IH (f i x')).
+  apply fold_left_app.
 Qed.
 
 Definition middle_assoc [A : Type] (P : A -> Prop) (f : A -> A -> A) : Prop := forall (a m b : A), forall (P_m : P m), f (f a m) b = f a (f m b).
@@ -184,31 +182,7 @@ Theorem fold_left_right_equiv :
     fold_left f l z = fold_right f z l.
 Proof.
   intros A f z l H_assoc H_comm.
-  revert z. (* We generalize z to allow induction *)
-  induction l as [| x xs IH]; intros z.
-  - (* Base case: empty list *)
-    reflexivity.
-  - (* Inductive step: non-empty list *)
-    simpl. (* Simplify both fold_left and fold_right *)
-    rewrite <- IH. (* Apply the inductive hypothesis *)
-    clear IH. (* No longer need the inductive hypothesis *)
-    (* Now use the associativity of f to rearrange *)
-    induction xs as [| y ys IHys]; simpl.
-    + (* Case: xs = [] *)
-      apply H_comm.
-    + (* Case: xs = y :: ys *)
-      rewrite (H_comm x (fold_left f ys (f z y))).
-      rewrite <- (fold_left_cons_comm).
-      * simpl.
-        rewrite <- (H_assoc z y x).
-        rewrite (H_comm y x).
-        rewrite (H_assoc z x y).
-        reflexivity.
-      * intros.
-        unfold ssrfun.commutative.
-        intros.
-        rewrite <- H_assoc.
-        rewrite (H_comm x0 y0).
-        rewrite H_assoc.
-        reflexivity.
+  apply fold_symmetric.
+  - apply H_assoc.
+  - apply H_comm.
 Qed.
