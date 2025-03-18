@@ -143,3 +143,27 @@ Proof.
         rewrite H_assoc.
         reflexivity.
 Qed.
+
+(* Non-empty lists *)
+Record nelist (A : Type) :=
+  new_nelist {
+      ne_list : list A;
+      _ : 0 < length ne_list;
+    }.
+
+Arguments ne_list {_} _.
+Arguments new_nelist {_} _ _.
+
+Definition mk_nelist {A : Type} {l : list A} (_ : 0 < length l) : nelist A :=
+  new_nelist l ltac:(assumption).
+
+(* 
+Lemma lt0l : 0 < length [2].
+Proof.
+  auto.
+Qed.
+
+Definition n := mk_nelist lt0l.
+
+Compute (ne_list n).
+*)
