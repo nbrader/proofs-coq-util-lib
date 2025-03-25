@@ -21,6 +21,20 @@ Definition concat {A : Type} : list (list A) -> list A := @List.concat A.
 
 Definition segs {A : Type} : list A -> list (list A) := concat ∘ map inits ∘ tails.
 
+Fixpoint drop_n {A : Type} (n : nat) (l : list A) : list A :=
+  match n, l with
+  | 0, _ => l
+  | S n', [] => []
+  | S n', _ :: t => drop_n n' t
+  end.
+
+Fixpoint take_n {A : Type} (n : nat) (l : list A) : list A :=
+  match n, l with
+  | 0, _ => []
+  | S n', [] => []
+  | S n', x :: t => x :: take_n n' t
+  end.
+
 Fixpoint scan_right {A B : Type} (f : A -> B -> B) (i : B) (xs : list A) {struct xs} : list B :=
   match xs with
   | nil => [i]
