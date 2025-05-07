@@ -1,6 +1,8 @@
 Require Import Coq.Program.Basics.
 Require Import Coq.Program.Combinators.
 Require Import Coq.Lists.List.
+Require Import CoqUtilLib.Iteration.
+
 Import ListNotations.
 
 Require Import OptionFunctions.
@@ -24,7 +26,7 @@ Definition segs {A : Type} : list A -> list (list A) := concat ∘ map inits ∘
 Fixpoint drop_n {A : Type} (n : nat) (l : list A) : list A :=
   match n, l with
   | 0, _ => l
-  | S n', [] => []
+  | _, [] => []
   | S n', _ :: t => drop_n n' t
   end.
 
@@ -35,7 +37,7 @@ Fixpoint take_n {A : Type} (n : nat) (l : list A) : list A :=
   | S n', x :: t => x :: take_n n' t
   end.
 
-Lemma take_n_drop_n_id : forall (A : Type) (n : nat) (l : list A),
+Lemma take_n_app_drop_n_id : forall (A : Type) (n : nat) (l : list A),
   take_n n l ++ drop_n n l = l.
 Proof.
   intros A n.
@@ -44,6 +46,49 @@ Proof.
   - destruct l as [| x t].
     + simpl. reflexivity.
     + simpl. rewrite IH. reflexivity.
+Qed.
+
+Lemma drop_n_S_eq :
+  forall (A : Type) (n : nat) (l : list A),
+    drop_n (S n) l = drop_n 1 (drop_n n l).
+Proof.
+  intros A n l.
+  revert l. induction n as [| n' IH]; intros l.
+  - simpl. reflexivity.
+  - destruct l as [| x t]; simpl.
+    + reflexivity.
+    + apply IH.
+Qed.
+
+Lemma drop_n_is_iter :
+  forall (A : Type) (n : nat) (l : list A),
+    drop_n n l = iter (drop_n 1) n l.
+Proof.
+  intros A n l.
+  induction n as [| n' IH].
+  - simpl. reflexivity.
+  - destruct l.
+    + replace (iter (drop_n 1) (S n') nil) with ((@drop_n A 1) (iter (drop_n 1) n' nil)) by reflexivity.
+      rewrite <- IH.
+      destruct n'; reflexivity.
+    + replace (iter (drop_n 1) (S n') (a :: l)) with ((drop_n 1) (iter (drop_n 1) n' (a :: l))) by reflexivity.
+      replace (drop_n (S n') (a :: l)) with ((drop_n (n') ((drop_n 1) (a :: l)))) by reflexivity.
+      rewrite <- IH.
+      destruct n'.
+      * reflexivity.
+      * replace (drop_n 1 (a :: l)) with (l) by reflexivity.
+        replace (drop_n (S n') (a :: l)) with (drop_n n' l) by reflexivity.
+        apply drop_n_S_eq.
+Qed.
+
+Lemma drop_m_drop_n_id : forall (A : Type) (m n : nat) (l : list A),
+  drop_n m (drop_n n l) = drop_n (m + n) l.
+Proof.
+  intros A m n l.
+  rewrite drop_n_is_iter.
+  rewrite drop_n_is_iter.
+  rewrite drop_n_is_iter.
+  apply iter_m_plus_n.
 Qed.
 
 Fixpoint scan_right {A B : Type} (f : A -> B -> B) (i : B) (xs : list A) {struct xs} : list B :=
