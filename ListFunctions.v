@@ -35,6 +35,17 @@ Fixpoint take_n {A : Type} (n : nat) (l : list A) : list A :=
   | S n', x :: t => x :: take_n n' t
   end.
 
+Lemma take_n_drop_n_id : forall (A : Type) (n : nat) (l : list A),
+  take_n n l ++ drop_n n l = l.
+Proof.
+  intros A n.
+  induction n as [| n' IH]; intros l.
+  - simpl. reflexivity.
+  - destruct l as [| x t].
+    + simpl. reflexivity.
+    + simpl. rewrite IH. reflexivity.
+Qed.
+
 Fixpoint scan_right {A B : Type} (f : A -> B -> B) (i : B) (xs : list A) {struct xs} : list B :=
   match xs with
   | nil => [i]
