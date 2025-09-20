@@ -297,6 +297,38 @@ Proof.
   - apply H_comm.
 Qed.
 
+Theorem fold_left_right_rev :
+  forall (A : Type) (f : A -> A -> A) (z : A) (l : list A),
+    fold_left f l z =
+    fold_right (fun x acc => f acc x) z (rev l).
+Proof.
+  intros A f z l.
+  revert z.
+  induction l as [|x xs IH]; intros z.
+  - simpl. reflexivity.
+  - simpl. rewrite IH.
+    (* Now goal:
+       fold_right (fun x0 acc => f acc x0) (f z x) (rev xs)
+         = fold_right (fun x0 acc => f acc x0) z (rev xs ++ [x]) *)
+    rewrite fold_right_app. simpl.
+    reflexivity.
+Qed.
+
+Theorem fold_left_rev_right :
+  forall (A B : Type) (f : A -> B -> A) (l : list B) (z : A),
+    fold_left f l z =
+    fold_right (fun x g => fun a => g (f a x)) (fun a => a) l z.
+Proof.
+  intros A B f l.
+  induction l as [|x xs IH]; intros z.
+  - (* base case *)
+    simpl. reflexivity.
+  - (* inductive case *)
+    simpl.
+    rewrite IH.
+    reflexivity.
+Qed.
+
 (* Non-empty lists *)
 Record nelist (A : Type) :=
   new_nelist {
