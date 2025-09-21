@@ -292,11 +292,11 @@ Proof.
 Qed.
 
 Theorem fold_left_right_rev :
-  forall (A : Type) (f : A -> A -> A) (z : A) (l : list A),
+  forall (A B : Type) (f : A -> B -> A) (z : A) (l : list B),
     fold_left f l z =
     fold_right (fun x acc => f acc x) z (rev l).
 Proof.
-  intros A f z l.
+  intros A B f z l.
   revert z.
   induction l as [|x xs IH]; intros z.
   - simpl. reflexivity.
