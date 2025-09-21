@@ -328,7 +328,7 @@ Proof.
     reflexivity.
 Qed.
 
-Theorem fold_left_rev_right :
+Theorem fold_left_as_fold_right :
   forall (A B : Type) (f : A -> B -> A) (l : list B) (z : A),
     fold_left f l z =
     fold_right (fun x g => fun a => g (f a x)) (fun a => a) l z.
