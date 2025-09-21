@@ -328,6 +328,51 @@ Proof.
     reflexivity.
 Qed.
 
+(* More general lemma: fold_left with cons and arbitrary initial accumulator *)
+Lemma fold_left_cons_general : forall (A : Type) (l : list A) (acc : list A),
+  fold_left (fun acc x => x :: acc) l acc =
+  rev l ++ acc.
+Proof.
+  intros A l acc.
+  revert acc.
+  induction l as [|x xs IH]; intros acc.
+  - (* Base case: l = [] *)
+    simpl fold_left.
+    simpl rev.
+    simpl app.
+    reflexivity.
+  - (* Inductive case: l = x :: xs *)
+    simpl fold_left.
+    simpl rev.
+    rewrite IH.
+    (* Goal: (rev xs ++ [x]) ++ acc = rev xs ++ (x :: acc) *)
+    (* Convert x :: acc to [x] ++ acc *)
+    change (x :: acc) with ([x] ++ acc).
+    (* Goal: (rev xs ++ [x]) ++ acc = rev xs ++ [x] ++ acc *)
+    (* This is exactly app_assoc *)
+    apply app_assoc.
+Qed.
+
+Theorem rev_fold_right_left :
+  forall (A : Type) (l : list A),
+    fold_left (fun acc x => x :: acc) l [] =
+    rev (fold_right cons [] l).
+Proof.
+  intros A l.
+  (* Use the general lemma with acc = [] *)
+  rewrite fold_left_cons_general.
+  (* Goal: rev l ++ [] = rev (fold_right cons [] l) *)
+  rewrite app_nil_r.
+  (* Goal: rev l = rev (fold_right cons [] l) *)
+  (* Now I need to show that fold_right cons [] l = l *)
+  assert (H: fold_right cons [] l = l).
+  { induction l as [|x xs IH].
+    - simpl. reflexivity.
+    - simpl. rewrite IH. reflexivity. }
+  rewrite H.
+  reflexivity.
+Qed.
+
 Theorem fold_left_as_fold_right :
   forall (A B : Type) (f : A -> B -> A) (l : list B) (z : A),
     fold_left f l z =
