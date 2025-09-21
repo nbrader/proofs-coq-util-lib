@@ -373,6 +373,27 @@ Proof.
   reflexivity.
 Qed.
 
+Theorem rev_fold_left_right :
+  forall (A : Type) (l : list A),
+    fold_right cons [] l =
+    rev (fold_left (fun acc x => x :: acc) l []).
+Proof.
+  intros A l.
+  (* Use the general lemma with acc = [] *)
+  rewrite fold_left_cons_general.
+  (* Goal: rev l ++ [] = rev (fold_right cons [] l) *)
+  rewrite app_nil_r.
+  (* Goal: rev l = rev (fold_right cons [] l) *)
+  (* Now I need to show that fold_right cons [] l = l *)
+  assert (H: fold_right cons [] l = l).
+  { induction l as [|x xs IH].
+    - simpl. reflexivity.
+    - simpl. rewrite IH. reflexivity. }
+  rewrite H.
+  rewrite rev_involutive.
+  reflexivity.
+Qed.
+
 Theorem fold_left_as_fold_right :
   forall (A B : Type) (f : A -> B -> A) (l : list B) (z : A),
     fold_left f l z =
