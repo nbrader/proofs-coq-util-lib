@@ -462,6 +462,64 @@ Proof.
   apply tails_rec_equiv.
 Qed.
 
+(* DUAL VERSION: inits_rec_equiv lemma (dual of tails_rec_equiv) *)
+Lemma inits_rec_equiv : forall {A : Type} (xs : list A), inits xs = inits_rec xs.
+Proof.
+  intros A xs.
+  induction xs as [| x xs' IH].
+
+  - (* Base case: xs = [] *)
+    simpl inits_rec.
+    unfold inits. simpl.
+    reflexivity.
+
+  - (* Inductive case: xs = x :: xs' *)
+    simpl inits_rec.
+    unfold inits at 1.
+    simpl fold_right.
+
+    (* The key insight: fold_right on xs' produces inits xs' *)
+    assert (Hinits: fold_right (fun x => cons [] ∘ map (cons x)) [[]] xs' = inits xs').
+    { unfold inits. reflexivity. }
+
+    rewrite Hinits.
+    rewrite IH.
+
+    (* Now we need to show the pattern *)
+    simpl.
+    f_equal.
+    reflexivity.
+Qed.
+
+Lemma inits_rec_equiv_ext : forall {A : Type} , @inits A = inits_rec.
+Proof.
+  intros A.
+  apply functional_extensionality.
+  apply inits_rec_equiv.
+Qed.
+
+(* Key dual conversion lemma: relationship between inits_rec and tails_rec via reversal *)
+Lemma inits_tails_rev : forall {A : Type} (xs : list A),
+  inits_rec xs = rev (map (@rev A) (tails_rec (rev xs))).
+Proof.
+  intros A xs.
+  induction xs as [| x xs' IH].
+
+  - (* Base case: xs = [] *)
+    simpl inits_rec.
+    simpl rev.
+    simpl tails_rec.
+    simpl map.
+    simpl rev.
+    reflexivity.
+
+  - (* Inductive case: xs = x :: xs' *)
+    (* This requires careful manipulation of the recursive definitions *)
+    (* and the relationship between cons, rev, and map operations *)
+    (* For now, admit this - it's the key missing piece for scan_left_right_rev *)
+    admit.
+Admitted.
+
 Lemma tails_cons : forall {A : Type} (x : A) (xs : list A),
   tails (x :: xs) = (x :: xs) :: tails xs.
 Proof.
