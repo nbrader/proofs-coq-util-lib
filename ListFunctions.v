@@ -691,7 +691,7 @@ Proof.
     f_equal.
 Qed.
 
-Lemma scan_right_tails_rec_fold : forall {A B : Type} (f : A -> B -> B) (i : B) (xs : list A),
+Lemma scan_right_lemma : forall {A B : Type} (f : A -> B -> B) (i : B) (xs : list A),
   scan_right f i xs = map (fold_right f i) (tails_rec xs).
 Proof.
   intros A B f i xs.
@@ -716,8 +716,8 @@ Proof.
     exact IH.
 Qed.
 
-(* DUAL VERSION: scan_left_inits_rec_fold lemma (dual of scan_right_tails_rec_fold) *)
-Lemma scan_left_inits_rec_fold : forall {A B : Type} (f : B -> A -> B) (xs : list A) (i : B),
+(* DUAL VERSION: scan_left_lemma lemma (dual of scan_right_lemma) *)
+Lemma scan_left_lemma : forall {A B : Type} (f : B -> A -> B) (xs : list A) (i : B),
   scan_left f xs i = map (fun prefix => fold_left f prefix i) (inits_rec xs).
 Proof.
   intros A B f xs i.
