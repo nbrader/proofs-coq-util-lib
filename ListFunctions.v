@@ -310,8 +310,19 @@ Proof.
   - apply H_assoc.
   - apply H_comm.
 Qed.
+Theorem fold_left_right_rev {A B : Type} :
+  forall (f : A -> B -> B) (xs : list A) (init : B),
+    fold_left (fun acc x => f x acc) xs init = fold_right f init (rev xs).
+Proof.
+  intros f xs init.
+  revert init.
+  induction xs as [|x xs' IH]; intros init.
+  - simpl. reflexivity.
+  - simpl rev. rewrite fold_right_app. simpl.
+    simpl fold_left. rewrite IH. reflexivity.
+Qed.
 
-Theorem fold_left_right_rev :
+Theorem fold_left_right_rev' :
   forall (A B : Type) (f : A -> B -> A) (z : A) (l : list B),
     fold_left f l z =
     fold_right (fun x acc => f acc x) z (rev l).
