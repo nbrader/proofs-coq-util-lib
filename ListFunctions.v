@@ -746,3 +746,13 @@ Proof.
     (* Now IH applies to any initial value *)
     apply IH.
 Qed.
+
+(* Lemma about inits with cons *)
+Lemma inits_cons : forall (A : Type) (x : A) (xs : list A),
+  inits (x :: xs) = [] :: map (cons x) (inits xs).
+Proof.
+  intros A x xs.
+  unfold inits.
+  simpl.
+  reflexivity.
+Qed.
